@@ -44,9 +44,11 @@ parser.add_argument('--pos_limit', type=int, default=30, help='Position embeddin
 parser.add_argument('--num_conv', type=int, default=230, help='The number of convolutional filters.')
 parser.add_argument('--win_size', type=int, default=3, help='Convolutional filter size.')
 parser.add_argument('--dropout', type=float, default=0.5, help='The rate at which randomly set a parameter to 0.')
-parser.add_argument('--lr', type=float, default=0.01, help='Applies to SGD.')
+parser.add_argument('--lr', type=float, default=0.001, help='Applies to SGD.')
 parser.add_argument('--num_epoch', type=int, default=15)
-parser.add_argument('--num_train_EPs', type=int, default=500)
+
+parser.add_argument('--num_trial', type=int, default=50000)
+parser.add_argument('--trial', type=bool, default=False)
 
 parser.add_argument('--cuda', type=bool, default=torch.cuda.is_available())
 parser.add_argument('--cpu', action='store_true', help='Ignore CUDA.')
@@ -94,6 +96,8 @@ opt['pos_min_e2'] = all_data.pos_min_e2
 
 assert opt['pos_e1_size'] == opt['pos_e2_size']
 
+helper.print_config(opt)
+
 
 PCNN_ATT_model = PCNN_ATT(word_vec, opt)
 PCNN_ATT_model.cuda()
@@ -109,8 +113,10 @@ for epoch in xrange(opt['num_epoch']):
     
     total_loss = torch.Tensor([0]).cuda()
     
-    # train_part = train_names[:opt['num_train_EPs']]
-    train_part = train_names[:]
+    if opt['trial']:
+        train_part = all_data.bags_train.keys()[:opt['num_trial']]
+    else:
+        train_part = all_data.bags_train.keys()[:]
             
     shuffle(train_part) 
     
@@ -121,9 +127,9 @@ for epoch in xrange(opt['num_epoch']):
             
         optimizer.zero_grad()
             
-        sentence_list = bags_train[bag_name]
+        sentence_list = all_data.bags_train[bag_name]
         
-        target = int(relationList[sentence_list[0]])
+        target = int(all_data.train_rel[sentence_list[0]])
 
         try:
             log_probs = PCNN_ATT_model(sentence_list, target, all_data)
@@ -139,9 +145,11 @@ for epoch in xrange(opt['num_epoch']):
         optimizer.step()
         
         total_loss += loss.data
+        
+    # Eval and get the AUC
+    test_AUC = PCNN_ATT_model.test(all_data)
     
     # Save parameters in each epoch
-
     helper.check_dir(opt['save_dir'])
 
     model_file = opt['save_dir'] + '/checkpoint_epoch_%s.tar' % epoch
@@ -150,9 +158,19 @@ for epoch in xrange(opt['num_epoch']):
        'state_dict': PCNN_ATT_model.state_dict(),
     }, model_file )
     
+    best_file = opt['save_dir'] + '/checkpoint_best.tar'
+    
+    if epoch == 0 or best_AUC < test_AUC:
+        
+        best_AUC = test_AUC
+        
+        torch.save({
+           'state_dict': PCNN_ATT_model.state_dict(),
+        }, best_file )
+    
         
     stop_time = time.time()   
-    print 'The running time of epoch %d is: %f; and the loss is: %f' % (epoch, stop_time - start_time, total_loss.cpu().numpy()[0])
+    print 'The running time of epoch %d is: %f; the loss is: %f; the AUC of test is: %f' % (epoch, stop_time - start_time, total_loss.cpu().numpy()[0], test_AUC)
     start_time = stop_time
 
 
