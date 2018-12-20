@@ -10,7 +10,7 @@ This repo contains the *pytorch* code for paper [Neural Relation Extraction with
 
 
 ## Dataset
-[Data from Lin et. al. (2016)](https://github.com/thunlp/NRE/blob/master/data.zip)
+Use data from [Lin et. al. (2016)](https://github.com/thunlp/NRE/blob/master/data.zip), and put all training, test, vocab and relation files under the same directory.
 
 
 ## Training

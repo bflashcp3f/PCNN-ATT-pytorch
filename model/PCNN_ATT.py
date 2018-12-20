@@ -259,8 +259,8 @@ class PCNN_ATT(nn.Module):
 #         plt.plot(recall, precision)
 #         plt.axis([0, 0.4, 0, 1])
 
-        # return recall, precision
-        return metrics.auc(recall, precision)
+        return recall, precision
+        # return metrics.auc(recall, precision)
 
 
 
