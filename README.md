@@ -15,7 +15,7 @@ This repo contains the *pytorch* code for paper [Neural Relation Extraction with
 
 ## Training
 
-Train an PCNN-ATT model with:
+Train a PCNN-ATT model with:
 ```
 python train.py --data_dir data/ --lr 0.001 --num_epoch 15 --save_dir saved_models/
 ```
