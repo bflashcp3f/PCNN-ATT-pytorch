@@ -9,9 +9,15 @@ This repo contains the *pytorch* code for paper [Neural Relation Extraction with
 - PyTorch (tested on 0.4.1)
 
 
+## Dataset
+[Data from Lin et. al. (2016)](https://github.com/thunlp/NRE/blob/master/data.zip)
+
+
+## Training
+
 Train an PCNN-ATT model with:
 ```
-python train.py --data_dir data/ --vocab_dir data/ --rel_dir data/ --lr 0.001 --num_epoch 15 --save_dir saved_models
+python train.py --data_dir data/ --lr 0.001 --num_epoch 15 --save_dir saved_models/
 ```
 
 Model checkpoints and logs will be saved to `./saved_models/`.
@@ -20,12 +26,13 @@ Model checkpoints and logs will be saved to `./saved_models/`.
 
 Run held-out evaluation on the test set with:
 ```
-python eval.py saved_models/ --data_dir data/
+python eval.py --model_dir saved_models/ --model best_model.tar --data_dir data/
 ```
 
-This will use the `best_model.tar` by default. Use `--model checkpoint_epoch_10.tar` to specify a model checkpoint file of 10th training epoch. Add `--out saved_models/pr.dump` to write model precision/recall output to a file.
+Use `--model checkpoint_epoch_10.tar` to specify a model checkpoint file of 10th training epoch. Add `--out saved_models/pr.dump` to write model precision/recall output to a file.
 
 ## Reference
+[Lin et al., 2016] Yankai Lin, Shiqi Shen, Zhiyuan Liu, Huanbo Luan, and Maosong Sun. Neural Relation Extraction with Selective Attention over Instances. In Proceedings of ACL.
 [Original C++ code for PCNN-ATT](https://github.com/thunlp/NRE)
 
 
