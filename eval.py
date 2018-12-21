@@ -10,6 +10,7 @@ import copy
 import operator
 import argparse
 import utils
+import pickle
 
 import numpy as np
 from scipy.misc import logsumexp
@@ -39,21 +40,33 @@ def main():
 	parser.add_argument('--model', type=str, default='best_model.tar', help='Name of the model file.')
 	parser.add_argument('--data_dir', type=str, default='data/')
 	parser.add_argument('--out', type=str, default='', help="Save model predictions to this dir.")
+    
+	parser.add_argument('--emb_dim', type=int, default=50, help='Word embedding dimension.')
+	parser.add_argument('--pos_dim', type=int, default=5, help='Position embedding dimension.')
+	parser.add_argument('--pos_limit', type=int, default=30, help='Position embedding length limit.')
+	parser.add_argument('--num_conv', type=int, default=230, help='The number of convolutional filters.')
+	parser.add_argument('--win_size', type=int, default=3, help='Convolutional filter size.')
+	parser.add_argument('--dropout', type=float, default=0.5, help='The rate at which randomly set a parameter to 0.')
+	parser.add_argument('--lr', type=float, default=0.001, help='Applies to SGD.')
+	parser.add_argument('--num_epoch', type=int, default=15)
+
+	parser.add_argument('--num_trial', type=int, default=50000)
+	parser.add_argument('--trial', type=bool, default=False)
 
 	parser.add_argument('--cuda', type=bool, default=torch.cuda.is_available())
 	parser.add_argument('--cpu', action='store_true')
 	args = parser.parse_args()
 
 	if args.cpu:
-	    args.cuda = False
+		args.cuda = False
 	    
 	# make opt
 	opt = vars(args)
 
 	opt['train_file'] = opt['data_dir'] + '/' + 'train.txt'
-    opt['test_file'] = opt['data_dir'] + '/' + 'test.txt'
-    opt['vocab_file'] = opt['data_dir'] + '/' + 'vec.bin'
-    opt['rel_file'] = opt['data_dir'] + '/' + 'relation2id.txt'
+	opt['test_file'] = opt['data_dir'] + '/' + 'test.txt'
+	opt['vocab_file'] = opt['data_dir'] + '/' + 'vec.bin'
+	opt['rel_file'] = opt['data_dir'] + '/' + 'relation2id.txt'
 
 	# Pretrained word embedding
 	print "Load pretrained word embedding"
@@ -64,18 +77,16 @@ def main():
 	word_map = {}
 
 	for id, word in enumerate(word_list):
-	    word_map[word] = id
-
-	assert opt['emb_dim'] == w2v_model.syn0.shape[1]
+		word_map[word] = id
 
 
 	# Read from relation2id.txt to build a dictionary: rel_map
 	rel_map = {}
 	        
 	with open(opt['rel_file'],'rb') as f:
-	    for item in f:
-	        [relation, id] = item.strip('\n').split(' ')
-	        rel_map[relation] = int(id)
+		for item in f:
+			[relation, id] = item.strip('\n').split(' ')
+			rel_map[relation] = int(id)
 
 	opt['num_rel'] = len(rel_map)
 	opt['vocab_size'] = len(word_list)
@@ -91,6 +102,7 @@ def main():
 	assert opt['pos_e1_size'] == opt['pos_e2_size']
 
 	helper.print_config(opt)
+	print "Evaluaiton starts."
 
 	model_file = args.model_dir + '/' + args.model
 
@@ -120,7 +132,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+	main()
 
 
 

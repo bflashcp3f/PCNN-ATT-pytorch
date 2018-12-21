@@ -17,7 +17,7 @@ Use data from [Lin et. al. (2016)](https://github.com/thunlp/NRE/blob/master/dat
 
 Train a PCNN-ATT model with:
 ```
-python train.py --data_dir data/ --lr 0.001 --num_epoch 15 --save_dir saved_models/
+CUDA_VISIBLE_DEVICES=0 python train.py --data_dir data/ --lr 0.001 --num_epoch 15 --save_dir saved_models/
 ```
 
 Model checkpoints and logs will be saved to `./saved_models/`.
@@ -26,7 +26,7 @@ Model checkpoints and logs will be saved to `./saved_models/`.
 
 Run held-out evaluation on the test set with:
 ```
-python eval.py --model_dir saved_models/ --model best_model.tar --data_dir data/
+CUDA_VISIBLE_DEVICES=0 python eval.py --model_dir saved_models/ --model best_model.tar --data_dir data/
 ```
 
 Use `--model checkpoint_epoch_10.tar` to specify a model checkpoint file of 10th training epoch. Add `--out saved_models/pr.dump` to write model precision/recall output to a file.

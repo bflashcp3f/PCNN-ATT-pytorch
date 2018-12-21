@@ -106,6 +106,7 @@ def main():
 
     assert opt['pos_e1_size'] == opt['pos_e2_size']
 
+    helper.check_dir(opt['save_dir'])
     helper.print_config(opt)
 
 
@@ -115,11 +116,13 @@ def main():
     loss_function = nn.NLLLoss()
     optimizer = optim.SGD(PCNN_ATT_model.parameters(), lr=opt['lr'])
 
-
     start_time = time.time()
-
+    
+    print "Training starts."
 
     for epoch in xrange(opt['num_epoch']):
+        
+        print 'The running time of epoch %d:' % (epoch),
         
         total_loss = torch.Tensor([0]).cuda()
         
@@ -161,8 +164,6 @@ def main():
         test_AUC = metrics.auc(recall, precision)
         
         # Save parameters in each epoch
-        helper.check_dir(opt['save_dir'])
-
         model_file = opt['save_dir'] + '/checkpoint_epoch_%s.tar' % epoch
 
         torch.save({
@@ -181,7 +182,7 @@ def main():
         
             
         stop_time = time.time()   
-        print 'The running time of epoch %d is: %f; the loss is: %f; the AUC of P/R curve is: %f' % (epoch, stop_time - start_time, total_loss.cpu().numpy()[0], test_AUC)
+        print '%f; the total loss: %f; the AUC of P/R curve: %f' % (stop_time - start_time, total_loss.cpu().numpy()[0], test_AUC)
         start_time = stop_time
 
 
